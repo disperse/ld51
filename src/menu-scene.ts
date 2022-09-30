@@ -1,10 +1,11 @@
 import 'phaser';
-import particleUrl from '../assets/particle.png';
-import gaspUrl from '../assets/gasp.mp3';
+import tntUrl from '../assets/tnt_10x10.png';
+import jumpUrl from '../assets/assets_jump.ogg';
+import { GameConfig } from './main';
 
 export class MenuScene extends Phaser.Scene {
   private startKey!: Phaser.Input.Keyboard.Key;
-  private sprites: {s: Phaser.GameObjects.Image, r: number }[] = [];
+  private sprites: { s: Phaser.GameObjects.Image, r: number }[] = [];
 
   constructor() {
     super({
@@ -17,44 +18,40 @@ export class MenuScene extends Phaser.Scene {
       Phaser.Input.Keyboard.KeyCodes.S,
     );
     this.startKey.isDown = false;
-    this.load.image('particle', particleUrl);
-    this.load.audio('gasp', gaspUrl);
+    this.load.image('tnt', tntUrl);
+    this.load.audio('jump', jumpUrl);
   }
 
   create(): void {
-    this.add.text(0, 0, 'Press S to restart scene', {
+    this.add.text(10, 10, 'S to restart', {
       fontSize: '60px',
-      fontFamily: "Helvetica",
+      fontFamily: 'Helvetica',
     });
 
-    this.add.image(100, 100, 'particle');
+    const gameWidth = (GameConfig.width) ? +GameConfig.width : 800;
+    const gameHeight = (GameConfig.height) ? +GameConfig.height : 600;
 
     for (let i = 0; i < 300; i++) {
-        const x = Phaser.Math.Between(-64, 800);
-        const y = Phaser.Math.Between(-64, 600);
+      const x = Phaser.Math.Between(-64, gameWidth);
+      const y = Phaser.Math.Between(-64, gameHeight);
 
-        const image = this.add.image(x, y, 'particle');
-        image.setBlendMode(Phaser.BlendModes.ADD);
-        this.sprites.push({ s: image, r: 2 + Math.random() * 6 });
+      const image = this.add.image(x, y, 'tnt');
+      this.sprites.push({s: image, r: 2 + Math.random() * 6});
     }
   }
 
   update(): void {
     if (this.startKey.isDown) {
-      this.sound.play('gasp');
+      this.sound.play('jump');
       this.scene.start(this);
     }
 
-    for (let i = 0; i < this.sprites.length; i++) {
-        const sprite = this.sprites[i].s;
-
-        sprite.y -= this.sprites[i].r;
-
-        if (sprite.y < -256)
-        {
-            sprite.y = 700;
-        }
+    for (const element of this.sprites) {
+      const sprite = element.s;
+      sprite.y += element.r;
+      if (sprite.y > 700) {
+        sprite.y = -256;
+      }
     }
-
   }
 }
