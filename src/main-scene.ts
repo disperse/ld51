@@ -13,6 +13,10 @@ import rightArrow from '../assets/right-arrow.png';
 import indicatorArrow from '../assets/indicator-arrow.png';
 import late from '../assets/late.png';
 import early from '../assets/early.png';
+import ghost1 from '../assets/ghost_1.png';
+import ghost2 from '../assets/ghost_2.png';
+import ghostSing1 from '../assets/ghost_sing_1.png';
+import ghostSing2 from '../assets/ghost_sing_2.png';
 
 type Direction = "ArrowLeft" | "ArrowUp" | "ArrowRight" | "ArrowDown"
 
@@ -45,6 +49,7 @@ export class MainScene extends Phaser.Scene {
   private music!: Phaser.Sound.BaseSound;
   private late!: Phaser.GameObjects.Sprite;
   private early!: Phaser.GameObjects.Sprite;
+  private ghost!: Phaser.GameObjects.Sprite;
 
   constructor() {
     super({
@@ -78,6 +83,10 @@ export class MainScene extends Phaser.Scene {
     this.load.image('indicator-arrow', indicatorArrow);
     this.load.image('late', late);
     this.load.image('early', early);
+    this.load.image('ghost-1', ghost1);
+    this.load.image('ghost-2', ghost2);
+    this.load.image('ghost-sing-1', ghostSing1);
+    this.load.image('ghost-sing-2', ghostSing2);
   }
 
   create(): void {
@@ -101,6 +110,18 @@ export class MainScene extends Phaser.Scene {
 
     this.anims.createFromAseprite('film');
     this.add.sprite(64, 64, 'film').play({key: 'rolling', repeat: -1});
+
+    this.ghost = this.add.sprite(100, 40, 'ghost-1');
+    this.tweens.add({
+      targets: this.ghost,
+      y: 30,
+      duration: 3000,
+      ease: 'Back',
+      easeParams: [ 3.5 ],
+      delay: 1000,
+      yoyo: true,
+      repeat: -1,
+    });
 
     this.late = this.add.sprite(107, 10, 'late');
     this.early = this.add.sprite(107, 10, 'early');
@@ -158,6 +179,16 @@ export class MainScene extends Phaser.Scene {
     );
   }
 
+  sing(note: Phaser.Sound.BaseSound) {
+    note.play();
+    this.ghost.setTexture((Math.random() < 0.5) ? 'ghost-sing-1' : 'ghost-sing-2');
+  }
+
+  stopSinging(note: Phaser.Sound.BaseSound) {
+    note.stop();
+    this.ghost.setTexture((Math.random() < 0.5) ? 'ghost-1' : 'ghost-2');
+  }
+
   handleInput(evt: KeyboardEvent): void {
     if (this.isCursorKeyCode(evt.code)) {
       let error = true;
@@ -169,7 +200,7 @@ export class MainScene extends Phaser.Scene {
             this.statusText.setText(difference.toString());
             if (tn.direction === evt.code) {
               error = false;
-              note.play();
+              this.sing(note);
             }
             if (Math.abs(difference) > this.exactTime) {
               this.warnLateEarly(difference > 0)
@@ -178,7 +209,7 @@ export class MainScene extends Phaser.Scene {
         }
 
         if (evt.type === 'keyup' && note.isPlaying) {
-          note.stop();
+          this.stopSinging(note);
         }
       });
       if (error) {
