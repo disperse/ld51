@@ -28,3 +28,14 @@ I looked at quite a few web game frameworks. I settled on this setup because:
 * Phaser is the most prominent web game framework, with a lot of examples for pretty much every scenario.
 * Typescript lets me auto-complete everything and makes sure I avoid silly typo bugs.
 * Vite is much faster and simpler than Rollup and Webpack. I practically didn't have to do anything to get Phaser to work here, there's no complicated config file. The development-build-refresh cycle seems instant. It's fast enough that I never felt the need to measure it. Vite was built by evanw@ the person that built Vue.js.
+
+
+[
+{ voice: 0, start: 132, end: 225 },
+{ voice: 2, start: 232, end: 325 },
+{ voice: 7, start: 332, end: 425 },
+{ voice: 3, start: 432, end: 525 },
+{ voice: 1, start: 532, end: 625 },
+{ voice: 5, start: 632, end: 725 },
+{ voice: 6, start: 732, end: 925 },
+]

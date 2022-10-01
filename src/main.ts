@@ -1,16 +1,16 @@
 import './style.css'
 import 'phaser';
-import {MenuScene} from './menu-scene';
+import { MainScene } from './main-scene';
 
 export const GameConfig: Phaser.Types.Core.GameConfig = {
-  title: 'ExampleGame',
-  url: 'https://github.com/digitsensitive/phaser3-typescript',
+  title: 'Banshee',
+  url: 'https://github.com/disperse/ld51',
   version: '2.0',
-  width: 1280,
-  height: 720,
+  width: 128,
+  height: 72,
   type: Phaser.AUTO,
   parent: 'app',
-  scene: [MenuScene],
+  scene: [MainScene],
   input: {
     keyboard: true
   },
@@ -22,7 +22,7 @@ export const GameConfig: Phaser.Types.Core.GameConfig = {
     }
   },
   backgroundColor: '#eeeeee',
-  render: {pixelArt: false, antialias: true},
+  render: {pixelArt: true, antialias: false},
   scale: {
     mode: Phaser.Scale.FIT,
     autoCenter: Phaser.Scale.CENTER_BOTH,
