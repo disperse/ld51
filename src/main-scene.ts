@@ -1,30 +1,6 @@
 import 'phaser';
 import backgroundMusic from '../assets/background-music-1.mp3';
-import c2 from '../assets/c2.mp3';
-import cs2 from '../assets/cs2.mp3';
-import d2 from '../assets/d2.mp3';
-import ds2 from '../assets/ds2.mp3';
-import e2 from '../assets/e2.mp3';
-import f2 from '../assets/f2.mp3';
-import fs2 from '../assets/fs2.mp3';
-import g2 from '../assets/g2.mp3';
-import gs2 from '../assets/gs2.mp3';
-import a2 from '../assets/a2.mp3';
-import as2 from '../assets/as2.mp3';
-import b2 from '../assets/b2.mp3';
 import c3 from '../assets/c3.mp3';
-import cs3 from '../assets/cs3.mp3';
-import d3 from '../assets/d3.mp3';
-import ds3 from '../assets/ds3.mp3';
-import e3 from '../assets/e3.mp3';
-import f3 from '../assets/f3.mp3';
-import fs3 from '../assets/fs3.mp3';
-import g3 from '../assets/g3.mp3';
-import gs3 from '../assets/gs3.mp3';
-import a3 from '../assets/a3.mp3';
-import as3 from '../assets/as3.mp3';
-import b3 from '../assets/b3.mp3';
-import c4 from '../assets/c4.mp3';
 import downArrow from '../assets/down-arrow.png';
 import early from '../assets/early.png';
 import filmBackground from '../assets/film2.png';
@@ -84,31 +60,7 @@ export class MainScene extends Phaser.Scene {
   preload(): void {
     this.load.spritesheet('silent-movie-1', silentMovie1, {frameWidth: 72, frameHeight: 56, endFrame: 167});
     this.load.audio('background-music-1', backgroundMusic);
-    this.load.audio('C2', c2);
-    this.load.audio('C#2', cs2);
-    this.load.audio('D2', d2);
-    this.load.audio('D#2', ds2);
-    this.load.audio('E2', e2);
-    this.load.audio('F2', f2);
-    this.load.audio('F#2', fs2);
-    this.load.audio('G2', g2);
-    this.load.audio('G#2', gs2);
-    this.load.audio('A2', a2);
-    this.load.audio('A#2', as2);
-    this.load.audio('B2', b2);
     this.load.audio('C3', c3);
-    this.load.audio('C#3', cs3);
-    this.load.audio('D3', d3);
-    this.load.audio('D#3', ds3);
-    this.load.audio('E3', e3);
-    this.load.audio('F3', f3);
-    this.load.audio('F#3', fs3);
-    this.load.audio('G3', g3);
-    this.load.audio('G#3', gs3);
-    this.load.audio('A3', a3);
-    this.load.audio('A#3', as3);
-    this.load.audio('B3', b3);
-    this.load.audio('C4', c4);
     this.load.image('film', filmBackground);
     this.load.image('ArrowUp', upArrow);
     this.load.image('ArrowDown', downArrow);
@@ -144,11 +96,10 @@ export class MainScene extends Phaser.Scene {
     this.music = this.sound.add('background-music-1');
 
     this.notes = {}
-    // let detune = -1200;
-    let detune = 0;
+    let detune = -1200;
     letterNotes.forEach((ln) => {
-      this.notes[ln] = this.sound.add(ln, {volume: 1.0, detune: detune});
-      // detune += 100
+      this.notes[ln] = this.sound.add('C3', {volume: 1.0, detune: detune});
+      detune += 100
     });
 
     const projectorSprite = this.add.sprite(80, 40, 'projector');
