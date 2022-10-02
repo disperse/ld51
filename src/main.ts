@@ -1,6 +1,7 @@
 import './style.css'
 import 'phaser';
 import { MainScene } from './main-scene';
+import { MenuScene } from './menu-scene';
 
 export const GameConfig: Phaser.Types.Core.GameConfig = {
   title: 'Banshee',
@@ -10,7 +11,7 @@ export const GameConfig: Phaser.Types.Core.GameConfig = {
   height: 72,
   type: Phaser.AUTO,
   parent: 'app',
-  scene: [MainScene],
+  scene: [MenuScene, MainScene],
   input: {
     keyboard: true
   },
