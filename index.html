@@ -8,10 +8,20 @@
   </head>
   <body>
     <div id="app"></div>
-    <div class="window-controls">
-      <button onclick="_game.scale.toggleFullscreen()">Full screen</button>
-      <button onclick="_game.sound.mute = !_game.sound.mute">Mute</button>
-    </div>
     <script type="module" src="/src/main.ts"></script>
+    <style>
+      html, body {
+        padding: 0;
+        margin: 0;
+        overflow: hidden;
+      }
+      #app {
+        padding: 0;
+        margin: 0;
+        background-color: #000;
+        width: 100%;
+        height: 100%;
+      }
+    </style>
   </body>
 </html>
