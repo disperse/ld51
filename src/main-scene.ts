@@ -20,16 +20,14 @@ import rightArrow from '../assets/right-arrow.png';
 import silentMovie1 from '../assets/silent-movie-sprite-1.png';
 import upArrow from '../assets/up-arrow.png';
 
-type Direction = "ArrowLeft" | "ArrowUp" | "ArrowRight" | "ArrowDown"
-
 class Note {
-  direction: Direction;
+  direction: number;
   endTime: number;
   noteIndex: number;
   sprite: Phaser.GameObjects.Sprite | undefined;
   startTime: number;
 
-  constructor(start: number, end: number, note: number, dir: Direction) {
+  constructor(start: number, end: number, note: number, dir: number) {
     this.direction = dir;
     this.endTime = end;
     this.noteIndex = note;
@@ -38,7 +36,9 @@ class Note {
 }
 
 export class MainScene extends Phaser.Scene {
+  private directions: Array<string> = ["ArrowLeft", "ArrowUp", "ArrowRight", "ArrowDown"]
   private distanceToArrow = 90; // pixels
+  private down!: Phaser.Input.Keyboard.Key;
   private early!: Phaser.GameObjects.Sprite;
   private elapsedTime!: number;
   private exactTime = 100; // ms timing accuracy
@@ -47,13 +47,16 @@ export class MainScene extends Phaser.Scene {
   private ghost!: Phaser.GameObjects.Sprite;
   private late!: Phaser.GameObjects.Sprite;
   private lateEarlyTime = 200; // display late / early message
+  private left!: Phaser.Input.Keyboard.Key;
   private music!: Phaser.Sound.BaseSound;
   private notes!: Array<Phaser.Sound.BaseSound>;
   private perfect!: Phaser.GameObjects.Sprite;
   private perfectTime = 50;
+  private right!: Phaser.Input.Keyboard.Key;
   private scrollSpeed = 40; // ms / pixel
   private startTime!: number;
   private targetNotes!: Array<Note>;
+  private up!: Phaser.Input.Keyboard.Key;
 
   constructor() {
     super({
@@ -69,16 +72,16 @@ export class MainScene extends Phaser.Scene {
     this.load.audio('d-note', dNote);
     this.load.audio('e-note', eNote);
     this.targetNotes = [
-      new Note(1000, 500, 0, 'ArrowUp'),
-      new Note(2000, 700, 1, 'ArrowDown'),
-      new Note(3000, 1500, 2, 'ArrowLeft'),
-      new Note(4000, 3000, 3, 'ArrowDown'),
-      new Note(5000, 4200, 2, 'ArrowUp'),
-      new Note(6000, 5500, 1, 'ArrowUp'),
-      new Note(7000, 7000, 2, 'ArrowDown'),
-      new Note(8000, 7250, 1, 'ArrowLeft'),
-      new Note(9000, 9000, 2, 'ArrowRight'),
-      new Note(10000, 9900, 3, 'ArrowUp'),
+      new Note(1000, 500, 0, 1),
+      new Note(2000, 700, 1, 3),
+      new Note(3000, 1500, 2, 2),
+      new Note(4000, 3000, 3, 0),
+      new Note(5000, 4200, 2, 1),
+      new Note(6000, 5500, 1, 1),
+      new Note(7000, 7000, 2, 3),
+      new Note(8000, 7250, 1, 0),
+      new Note(9000, 9000, 2, 3),
+      new Note(10000, 9900, 3, 1),
     ];
     this.load.image('film', filmBackground);
     this.load.image('ArrowUp', upArrow);
@@ -98,6 +101,10 @@ export class MainScene extends Phaser.Scene {
 
   create(): void {
     this.scale.refresh();
+    this.up = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.UP);
+    this.down = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.DOWN);
+    this.left = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.LEFT);
+    this.right = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.RIGHT);
 
     this.anims.create({
       key: 'play-movie',
@@ -111,13 +118,22 @@ export class MainScene extends Phaser.Scene {
     this.music = this.sound.add('background-music-1');
 
     this.notes = [
-      this.sound.add('b-note', {volume: 0.5, detune: 50}),
-      this.sound.add('c-note', {volume: 0.5, detune: 50}),
-      this.sound.add('d-note', {volume: 0.5, detune: 50}),
-      this.sound.add('e-note', {volume: 0.5, detune: 50}),
+      this.sound.add('c-note', {volume: 0.5, detune: -100}),
+      this.sound.add('c-note', {volume: 0.5, detune: 0}),
+      this.sound.add('c-note', {volume: 0.5, detune: 100}),
+      this.sound.add('c-note', {volume: 0.5, detune: 200}),
     ]
 
-    this.add.sprite(80, 40, 'projector');
+    const projectorSprite = this.add.sprite(80, 40, 'projector');
+    this.tweens.add({
+      targets: projectorSprite,
+      y: 41,
+      duration: 200,
+      ease: 'Bounce',
+      yoyo: true,
+      repeat: -1,
+    });
+
     this.filmSprite = this.add.tileSprite(64, 64, 127, 15, 'film');
     this.add.sprite((127 - this.distanceToArrow), 66, 'indicator-arrow').setBlendMode(Phaser.BlendModes.ADD);
 
@@ -132,22 +148,18 @@ export class MainScene extends Phaser.Scene {
       repeat: -1,
     });
 
-    this.late = this.add.sprite(107, 5, 'late');
-    this.early = this.add.sprite(107, 5, 'early');
-    this.perfect = this.add.sprite(107, 5, 'perfect');
+    this.late = this.add.sprite(20, 5, 'late');
+    this.early = this.add.sprite(20, 5, 'early');
+    this.perfect = this.add.sprite(25, 5, 'perfect');
     this.early.alpha = 0.0;
     this.late.alpha = 0.0;
     this.perfect.alpha = 0.0;
 
-    this.input.keyboard.on('keydown', (evt: KeyboardEvent) => {
+    this.input.keyboard.on('keydown', () => {
       if (!this.gameStarted) {
         this.startGame();
-      } else {
-        this.handleInput(evt);
       }
     });
-
-    this.input.keyboard.on('keyup', (evt: KeyboardEvent) => this.handleInput(evt));
   }
 
   startGame(): void {
@@ -168,7 +180,7 @@ export class MainScene extends Phaser.Scene {
       // if arrow is in view
       if (arrowPos < 127 && arrowPos > -10) {
         if (tn.sprite === undefined) {
-          tn.sprite = this.add.sprite(arrowPos, 64, tn.direction);
+          tn.sprite = this.add.sprite(arrowPos, 65, this.directions[tn.direction]);
         } else {
           tn.sprite.x = arrowPos;
         }
@@ -200,36 +212,36 @@ export class MainScene extends Phaser.Scene {
     this.ghost.setTexture((Math.random() < 0.5) ? 'ghost-1' : 'ghost-2');
   }
 
-  handleInput(evt: KeyboardEvent): void {
-    if (this.isCursorKeyCode(evt.code)) {
-      let error = true;
-      this.targetNotes.forEach(tn => {
-        let note = this.notes[tn.noteIndex];
-        if (evt.type === 'keydown') {
-          let difference = this.elapsedTime - tn.startTime
-          if (Math.abs(difference) < this.lateEarlyTime) {
-            if (tn.direction === evt.code) {
-              error = false;
-              this.sing(note);
-              if (Math.abs(difference) > this.exactTime) {
-                this.warnLateEarly(difference > 0)
-              }
-              if (Math.abs(difference) < this.perfectTime) {
-                this.perfect.alpha = 1.0;
-                this.late.alpha = 0.0;
-                this.early.alpha = 0.0;
-              }
+  handleInput(arrowNum: number, down: boolean): void {
+    let error = true;
+    this.targetNotes.forEach(tn => {
+      let note = this.notes[tn.noteIndex];
+      if (down) {
+        let difference = this.elapsedTime - tn.startTime
+        if (Math.abs(difference) < this.lateEarlyTime) {
+          if (tn.direction === arrowNum) {
+            error = false;
+            this.sing(note);
+            if (Math.abs(difference) > this.exactTime) {
+              this.warnLateEarly(difference > 0)
+            }
+            if (Math.abs(difference) < this.perfectTime) {
+              this.perfect.alpha = 1.0;
+              this.late.alpha = 0.0;
+              this.early.alpha = 0.0;
             }
           }
         }
-
-        if (evt.type === 'keyup' && note.isPlaying) {
-          this.stopSinging(note);
-        }
-      });
-      if (error) {
-        console.log('oops!');
       }
+
+      if (!down && note.isPlaying) {
+        this.stopSinging(note);
+        // TODO: deal with end of notes
+        error = false;
+      }
+    });
+    if (error) {
+      console.log('oops!');
     }
   }
 
@@ -241,6 +253,16 @@ export class MainScene extends Phaser.Scene {
 
   update(_: number, delta: number): void {
     if (this.gameStarted) {
+      if (Phaser.Input.Keyboard.JustDown(this.left)) this.handleInput(0, true);
+      if (Phaser.Input.Keyboard.JustDown(this.up)) this.handleInput(1, true);
+      if (Phaser.Input.Keyboard.JustDown(this.right)) this.handleInput(2, true);
+      if (Phaser.Input.Keyboard.JustDown(this.down)) this.handleInput(3, true);
+
+      if (Phaser.Input.Keyboard.JustUp(this.left)) this.handleInput(0, false);
+      if (Phaser.Input.Keyboard.JustUp(this.up)) this.handleInput(1, false);
+      if (Phaser.Input.Keyboard.JustUp(this.right)) this.handleInput(2, false);
+      if (Phaser.Input.Keyboard.JustUp(this.down)) this.handleInput(3, false);
+
       this.filmSprite.tilePositionX += delta / this.scrollSpeed;
       this.elapsedTime = Date.now() - this.startTime;
       this.updateTargetNotes();
