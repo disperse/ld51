@@ -1,10 +1,31 @@
 import 'phaser';
-import bNote from '../assets/note_b.wav';
 import backgroundMusic from '../assets/background-music-1.mp3';
-import cNote from '../assets/note_c.wav';
-import dNote from '../assets/note_d.wav';
+import c2 from '../assets/c2.mp3';
+import cs2 from '../assets/cs2.mp3';
+import d2 from '../assets/d2.mp3';
+import ds2 from '../assets/ds2.mp3';
+import e2 from '../assets/e2.mp3';
+import f2 from '../assets/f2.mp3';
+import fs2 from '../assets/fs2.mp3';
+import g2 from '../assets/g2.mp3';
+import gs2 from '../assets/gs2.mp3';
+import a2 from '../assets/a2.mp3';
+import as2 from '../assets/as2.mp3';
+import b2 from '../assets/b2.mp3';
+import c3 from '../assets/c3.mp3';
+import cs3 from '../assets/cs3.mp3';
+import d3 from '../assets/d3.mp3';
+import ds3 from '../assets/ds3.mp3';
+import e3 from '../assets/e3.mp3';
+import f3 from '../assets/f3.mp3';
+import fs3 from '../assets/fs3.mp3';
+import g3 from '../assets/g3.mp3';
+import gs3 from '../assets/gs3.mp3';
+import a3 from '../assets/a3.mp3';
+import as3 from '../assets/as3.mp3';
+import b3 from '../assets/b3.mp3';
+import c4 from '../assets/c4.mp3';
 import downArrow from '../assets/down-arrow.png';
-import eNote from '../assets/note_e.wav';
 import early from '../assets/early.png';
 import filmBackground from '../assets/film2.png';
 import ghost1 from '../assets/ghost_1.png';
@@ -19,21 +40,18 @@ import projector from '../assets/projector.png';
 import rightArrow from '../assets/right-arrow.png';
 import silentMovie1 from '../assets/silent-movie-sprite-1.png';
 import upArrow from '../assets/up-arrow.png';
+import { targetNotes } from '../music/piece1.js';
 
-class Note {
+export interface Note {
   direction: number;
-  endTime: number;
-  noteIndex: number;
-  sprite: Phaser.GameObjects.Sprite | undefined;
-  startTime: number;
-
-  constructor(start: number, end: number, note: number, dir: number) {
-    this.direction = dir;
-    this.endTime = end;
-    this.noteIndex = note;
-    this.startTime = start;
-  }
+  duration: number;
+  note: string;
+  sprite?: Phaser.GameObjects.Sprite;
+  start: number;
 }
+
+const letterNotes = [ 'C2', 'C#2', 'D2', 'D#2', 'E2', 'F2', 'F#2', 'G2', 'G#2', 'A2', 'A#2', 'B2', 'C3', 'C#3', 'D3',
+  'D#3', 'E3', 'F3', 'F#3', 'G3', 'G#3', 'A3', 'A#3', 'B3', 'C4' ];
 
 export class MainScene extends Phaser.Scene {
   private directions: Array<string> = ["ArrowLeft", "ArrowUp", "ArrowRight", "ArrowDown"]
@@ -46,16 +64,15 @@ export class MainScene extends Phaser.Scene {
   private gameStarted!: boolean;
   private ghost!: Phaser.GameObjects.Sprite;
   private late!: Phaser.GameObjects.Sprite;
-  private lateEarlyTime = 200; // display late / early message
+  private lateEarlyTime = 300; // display late / early message
   private left!: Phaser.Input.Keyboard.Key;
   private music!: Phaser.Sound.BaseSound;
-  private notes!: Array<Phaser.Sound.BaseSound>;
+  private notes!: { [note: string] : Phaser.Sound.BaseSound };
   private perfect!: Phaser.GameObjects.Sprite;
   private perfectTime = 50;
   private right!: Phaser.Input.Keyboard.Key;
   private scrollSpeed = 40; // ms / pixel
   private startTime!: number;
-  private targetNotes!: Array<Note>;
   private up!: Phaser.Input.Keyboard.Key;
 
   constructor() {
@@ -67,22 +84,31 @@ export class MainScene extends Phaser.Scene {
   preload(): void {
     this.load.spritesheet('silent-movie-1', silentMovie1, {frameWidth: 72, frameHeight: 56, endFrame: 167});
     this.load.audio('background-music-1', backgroundMusic);
-    this.load.audio('b-note', bNote);
-    this.load.audio('c-note', cNote);
-    this.load.audio('d-note', dNote);
-    this.load.audio('e-note', eNote);
-    this.targetNotes = [
-      new Note(1000, 500, 0, 1),
-      new Note(2000, 700, 1, 3),
-      new Note(3000, 1500, 2, 2),
-      new Note(4000, 3000, 3, 0),
-      new Note(5000, 4200, 2, 1),
-      new Note(6000, 5500, 1, 1),
-      new Note(7000, 7000, 2, 3),
-      new Note(8000, 7250, 1, 0),
-      new Note(9000, 9000, 2, 3),
-      new Note(10000, 9900, 3, 1),
-    ];
+    this.load.audio('C2', c2);
+    this.load.audio('C#2', cs2);
+    this.load.audio('D2', d2);
+    this.load.audio('D#2', ds2);
+    this.load.audio('E2', e2);
+    this.load.audio('F2', f2);
+    this.load.audio('F#2', fs2);
+    this.load.audio('G2', g2);
+    this.load.audio('G#2', gs2);
+    this.load.audio('A2', a2);
+    this.load.audio('A#2', as2);
+    this.load.audio('B2', b2);
+    this.load.audio('C3', c3);
+    this.load.audio('C#3', cs3);
+    this.load.audio('D3', d3);
+    this.load.audio('D#3', ds3);
+    this.load.audio('E3', e3);
+    this.load.audio('F3', f3);
+    this.load.audio('F#3', fs3);
+    this.load.audio('G3', g3);
+    this.load.audio('G#3', gs3);
+    this.load.audio('A3', a3);
+    this.load.audio('A#3', as3);
+    this.load.audio('B3', b3);
+    this.load.audio('C4', c4);
     this.load.image('film', filmBackground);
     this.load.image('ArrowUp', upArrow);
     this.load.image('ArrowDown', downArrow);
@@ -117,12 +143,13 @@ export class MainScene extends Phaser.Scene {
 
     this.music = this.sound.add('background-music-1');
 
-    this.notes = [
-      this.sound.add('c-note', {volume: 0.5, detune: -100}),
-      this.sound.add('c-note', {volume: 0.5, detune: 0}),
-      this.sound.add('c-note', {volume: 0.5, detune: 100}),
-      this.sound.add('c-note', {volume: 0.5, detune: 200}),
-    ]
+    this.notes = {}
+    // let detune = -1200;
+    let detune = 0;
+    letterNotes.forEach((ln) => {
+      this.notes[ln] = this.sound.add(ln, {volume: 1.0, detune: detune});
+      // detune += 100
+    });
 
     const projectorSprite = this.add.sprite(80, 40, 'projector');
     this.tweens.add({
@@ -175,8 +202,8 @@ export class MainScene extends Phaser.Scene {
   }
 
   updateTargetNotes(): void {
-    this.targetNotes.forEach(tn => {
-      const arrowPos = Math.ceil(127 - this.distanceToArrow - ((this.elapsedTime - tn.startTime) / this.scrollSpeed));
+    targetNotes.forEach(tn => {
+      const arrowPos = Math.ceil(127 - this.distanceToArrow - ((this.elapsedTime - tn.start) / this.scrollSpeed));
       // if arrow is in view
       if (arrowPos < 127 && arrowPos > -10) {
         if (tn.sprite === undefined) {
@@ -207,17 +234,21 @@ export class MainScene extends Phaser.Scene {
     this.ghost.setTexture((Math.random() < 0.5) ? 'ghost-sing-1' : 'ghost-sing-2');
   }
 
-  stopSinging(note: Phaser.Sound.BaseSound) {
+  stopNote(note: Phaser.Sound.BaseSound) {
     note.stop();
+  }
+
+  stopSinging(note: Phaser.Sound.BaseSound) {
+    this.stopNote(note);
     this.ghost.setTexture((Math.random() < 0.5) ? 'ghost-1' : 'ghost-2');
   }
 
   handleInput(arrowNum: number, down: boolean): void {
     let error = true;
-    this.targetNotes.forEach(tn => {
-      let note = this.notes[tn.noteIndex];
+    targetNotes.forEach(tn => {
+      let note = this.notes[tn.note];
       if (down) {
-        let difference = this.elapsedTime - tn.startTime
+        let difference = this.elapsedTime - tn.start
         if (Math.abs(difference) < this.lateEarlyTime) {
           if (tn.direction === arrowNum) {
             error = false;
@@ -236,7 +267,6 @@ export class MainScene extends Phaser.Scene {
 
       if (!down && note.isPlaying) {
         this.stopSinging(note);
-        // TODO: deal with end of notes
         error = false;
       }
     });
