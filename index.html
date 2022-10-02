@@ -5,15 +5,25 @@
     <link rel="icon" type="image/svg+xml" href="./assets/favicon.17e50649.svg" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Banshee</title>
-    <script type="module" crossorigin src="./assets/index.65ba9899.js"></script>
+    <script type="module" crossorigin src="./assets/index.fb23adf4.js"></script>
     <link rel="stylesheet" href="./assets/index.abd740de.css">
   </head>
   <body>
     <div id="app"></div>
-    <div class="window-controls">
-      <button onclick="_game.scale.toggleFullscreen()">Full screen</button>
-      <button onclick="_game.sound.mute = !_game.sound.mute">Mute</button>
-    </div>
     
+    <style>
+      html, body {
+        padding: 0;
+        margin: 0;
+        overflow: hidden;
+      }
+      #app {
+        padding: 0;
+        margin: 0;
+        background-color: #000;
+        width: 100%;
+        height: 100%;
+      }
+    </style>
   </body>
 </html>
