@@ -1,6 +1,6 @@
 import { Note } from '../src/main-scene';
 
-export const targetNotes: Array<Note> = [
+export const melody1: Array<Note> = [
   {
     start: 0,
     duration: 938,
