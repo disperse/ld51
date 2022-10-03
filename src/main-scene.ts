@@ -1,6 +1,7 @@
 import 'phaser';
 import backgroundMusic1 from '../assets/background-music-1.mp3';
 import backgroundMusic2 from '../assets/background-music-2.mp3';
+import backgroundMusic3 from '../assets/background-music-3.mp3';
 import countIn from '../assets/count-in.mp3';
 import c3 from '../assets/c3.mp3';
 import downArrow from '../assets/down-arrow.png';
@@ -20,9 +21,11 @@ import projector from '../assets/projector.png';
 import rightArrow from '../assets/right-arrow.png';
 import silentMovie1 from '../assets/silent-movie-sprite-1.png';
 import silentMovie2 from '../assets/silent-movie-sprite-2.png';
+import silentMovie3 from '../assets/silent-movie-sprite-3.png';
 import upArrow from '../assets/up-arrow.png';
 import { melody1 } from '../music/piece1.js';
 import { melody2 } from '../music/piece2.js';
+import { melody3 } from '../music/piece3.js';
 import pressAnyKey from '../assets/press-any-key.png';
 
 export interface Note {
@@ -64,8 +67,10 @@ export class MainScene extends Phaser.Scene {
   private currentlyPlaying!: Phaser.Sound.BaseSound;
   private melodies!: Array<Array<Note>>;
   private melodyIndex!: number;
-  private backgroundMusic: Array<string> = ['background-music-1', 'background-music-2'];
+  private backgroundMusic: Array<string> = ['background-music-1', 'background-music-2', 'background-music-3'];
   private silentMovie!: Phaser.GameObjects.Sprite;
+  private silentMovies!: Array<string>;
+  private silentMovieAnims!: Array<string>;
 
   constructor() {
     super({
@@ -76,8 +81,10 @@ export class MainScene extends Phaser.Scene {
   preload(): void {
     this.load.spritesheet('silent-movie-1', silentMovie1, {frameWidth: 72, frameHeight: 56, endFrame: 167});
     this.load.spritesheet('silent-movie-2', silentMovie2, {frameWidth: 84, frameHeight: 56, endFrame: 102});
+    this.load.spritesheet('silent-movie-3', silentMovie3, {frameWidth: 84, frameHeight: 56, endFrame: 154});
     this.load.audio('background-music-1', backgroundMusic1);
     this.load.audio('background-music-2', backgroundMusic2);
+    this.load.audio('background-music-3', backgroundMusic3);
     this.load.audio('C3', c3);
     this.load.audio('count-in', countIn);
     this.load.image('film', filmBackground);
@@ -107,7 +114,9 @@ export class MainScene extends Phaser.Scene {
     this.right = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.RIGHT);
 
     this.melodyIndex = 0;
-    this.melodies = [melody1, melody2];
+    this.melodies = [melody1, melody2, melody3];
+    this.silentMovies = ['silent-movie-1', 'silent-movie-2', 'silent-movie-3'];
+    this.silentMovieAnims = ['play-movie-1', 'play-movie-2', 'play-movie-3'];
 
     this.anims.create({
       key: 'play-movie-1',
@@ -119,6 +128,13 @@ export class MainScene extends Phaser.Scene {
     this.anims.create({
       key: 'play-movie-2',
       frames: this.anims.generateFrameNumbers('silent-movie-2', {start: 0, end: 102, first: 0}),
+      frameRate: 9,
+      repeat: -1,
+    });
+
+    this.anims.create({
+      key: 'play-movie-3',
+      frames: this.anims.generateFrameNumbers('silent-movie-3', {start: 0, end: 102, first: 0}),
       frameRate: 9,
       repeat: -1,
     });
@@ -175,6 +191,7 @@ export class MainScene extends Phaser.Scene {
     this.perfect.alpha = 0.0;
 
     const press = this.add.sprite(60, 20, 'press-any-key');
+    press.setDepth(6);
     this.input.keyboard.on('keydown', () => {
       if (!this.gameStarted) {
         press.destroy(true);
@@ -185,7 +202,6 @@ export class MainScene extends Phaser.Scene {
   }
 
   startGame(): void {
-    // this.scene.start(this);
     this.count.play();
     this.startTime = Date.now();
     this.gameStarted = true;
@@ -212,7 +228,7 @@ export class MainScene extends Phaser.Scene {
 
   updateTargetNotes(): void {
     this.melodies[this.melodyIndex].forEach(tn => {
-      const arrowPos = Math.ceil(127 - this.distanceToArrow - ((this.elapsedTime - tn.start) / this.scrollSpeed));
+      const arrowPos = Math.floor(127 - this.distanceToArrow - ((this.elapsedTime - tn.start) / this.scrollSpeed));
       // if arrow is in view
       if (arrowPos < 127 && arrowPos > -10) {
         if (tn.sprite === undefined) {
@@ -316,18 +332,18 @@ export class MainScene extends Phaser.Scene {
               tn.sprite.destroy();
             }
           });
+          this.melodyIndex++;
           this.silentMovie.stop();
           this.silentMovie.destroy();
-          this.silentMovie = this.add.sprite(37, 29, 'silent-movie-2');
-          this.silentMovie.play('play-movie-2');
-          this.melodyIndex++;
+          this.silentMovie = this.add.sprite(37, 29, this.silentMovies[this.melodyIndex]);
+          this.silentMovie.play(this.silentMovieAnims[this.melodyIndex]);
           this.music = this.sound.add(this.backgroundMusic[this.melodyIndex]);
           this.musicPlayed = false;
           this.startTime = Date.now()
           this.elapsedTime = Date.now() - this.startTime - 2500;
           this.count.play();
         } else {
-          // TODO: end game
+          this.scene.start('EndScene');
         }
       }
     }
